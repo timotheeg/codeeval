@@ -7,8 +7,22 @@ fs.readFileSync(process.argv[2]).toString().split('\n').forEach(function (line) 
 	var idx1 = args[1]-1;
 	var idx2 = args[2]-1;
 
+	var bit_res1 = (num & (Math.pow(2, idx1)));
+	var bit_res2 = (num & (Math.pow(2, idx2)));
+	var res = false;
+
+	if (bit_res1) {
+		if (bit_res2)
+		{
+			res = true;
+		}
+	}
+	else if(!bit_res2) {
+		res = true;
+	}
+
 	process.stdout.write(
-		(((num >> idx1) & 1) === ((num >> idx2) & 1))
+		res
 		+ "\n"
 	);
 });
