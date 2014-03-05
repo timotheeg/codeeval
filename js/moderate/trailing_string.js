@@ -1,13 +1,13 @@
 var fs  = require("fs");
-
-var email_re = /^("[^""]+"|[a-z0-9_][a-z0-9_+-]*(\.[a-z0-9_+-]+)*)@([a-z0-9_]+\.)*[a-z]{2,4}$/i;
-
 fs.readFileSync(process.argv[2]).toString().split('\n').forEach(function (line)
 {
 	if (line === "") return;
 
+	var args = line.split(',');
+	var end = args[0].substr(-args[1].length);
+
 	process.stdout.write(
-		email_re.test(line.replace(/^\s+|\s+$/, ''))
+		(end === args[1] ? 1 : 0)
 		+ '\n'
 	);
 });
