@@ -10,25 +10,35 @@ fs.readFileSync(process.argv[2]).toString().split('\n').forEach(function (line)
 	var target = compress(args[1]);
 	var fits = true;
 
-	// return console.log(source, target);
+ 	console.log(line);
+	console.log(source + '');
+	console.log(target + '');
 
 	// assumes both input are valid per problem specs
 	// tries several passes at consuming the target
 	main: for (var s_idx=0, t_idx=0; s_idx<source.length; s_idx++)
 	{
+		console.log(source, target, s_idx, t_idx);
+
 		if (source[s_idx][0] === '0')
 		{
 			do
 			{
 				if (target[t_idx][0] !== 'A') {
 					if (s_idx===0) break;
-					if (++t_idx >= target.length) {
-						fits = false;
-						break main;
+					if (!target[t_idx].used ||
+						t_idx+1 >= target.length ||
+						target[t_idx+1][0] !== 'A'
+					) {
+						break;
 					}
-					if (target[t_idx][0] !== 'A') break;
+					else {
+						t_idx++;
+					}
 				}
 				target[t_idx][1] -= source[s_idx][1];
+				target[t_idx].used = true;
+
 				if (target[t_idx][1] < 0) break;
 				if (target[t_idx][1] === 0) t_idx++;
 				continue main;
@@ -39,23 +49,33 @@ fs.readFileSync(process.argv[2]).toString().split('\n').forEach(function (line)
 		}
 		else
 		{
-			while (source[s_idx][1])
+			while (source[s_idx][1] > 0)
 			{
 				if (target[t_idx][1] <= source[s_idx][1]) {
-					if (++t_idx >= target.length) {
+					source[s_idx][1] -= target[t_idx][1];
+					target[t_idx][1] = 0;
+					target[t_idx].used = true;
+					t_idx++;
+					if (source[s_idx][1] > 0 && t_idx >= target.length) {
 						fits = false;
 						break main;
 					}
-					source[s_idx][1] -= target[t_idx++][1];
 				}
 				else {
-					source[s_idx][1] = 0;
 					target[t_idx][1] -= source[s_idx][1];
+					source[s_idx][1] = 0;
+					target[t_idx].used = true;
 					break;
 				}
 			}
 		}
 	}
+
+	console.log(source, target, s_idx, t_idx);
+
+	fits = !!(fits &&
+		t_idx >= target.length -1 && 
+		target[t_idx].used);
 
 	process.stdout.write(
 		(fits ? 'Yes' : 'No')
@@ -65,7 +85,7 @@ fs.readFileSync(process.argv[2]).toString().split('\n').forEach(function (line)
 
 
 function compress(str) {
-	if (str.length <= 0) return '';
+	if (str.length <= 0) return [];
 
 	var last_char = str.charAt(0);
 	var c, count = 1;
