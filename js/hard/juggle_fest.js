@@ -40,11 +40,12 @@ require("fs").readFileSync(process.argv[2]).toString().split('\n').forEach(funct
 			p: p,
 			preferred_circuits_ids: preferred_circuits_ids,
 			circuit_idx: 0,
-			circuit_scores: {}
+			score: 0
 		};
 
 		do {
 			var circuit_id;
+			
 			if (juggler.circuit_idx >= juggler.preferred_circuits_ids.length) {
 				// juggler preferences are exhausted, now we try to place him in arbitrary groups... in order... *sucks*
 				circuit_id = 'C' + (juggler.circuit_idx - juggler.preferred_circuits_ids.length + 1);
@@ -52,13 +53,15 @@ require("fs").readFileSync(process.argv[2]).toString().split('\n').forEach(funct
 			else {
 				circuit_id = juggler.preferred_circuits_ids[juggler.circuit_idx];
 			}
+
 			var circuit = circuits_by_id[circuit_id];
-			juggler.circuit_scores[circuit_id] =
+
+			juggler.score =
 				  juggler.h * circuit.h
 				+ juggler.e * circuit.e
 				+ juggler.p * circuit.p;
 
-			insert(circuits_by_id[circuit_id].jugglers, juggler, circuit_id);
+			insert(circuit.jugglers, juggler);
 
 			if (circuit.jugglers.length <= JUGGLERS_PER_CIRCUIT) {
 				break;
@@ -93,7 +96,7 @@ function insert(array, element, id)
 	while (index) {
 		var i = index, j = --index;
 
-		if (array[i].circuit_scores[id] > array[j].circuit_scores[id]) {
+		if (array[i].score > array[j].score) {
 			var temp = array[i];
 			array[i] = array[j];
 			array[j] = temp;
