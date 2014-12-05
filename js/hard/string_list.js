@@ -8,12 +8,29 @@ fs.readFileSync(process.argv[2]).toString().split('\n').forEach(function (line)
     var chars = args[1].split('').sort();
 
     // removes duplicate chars
-    for (var i=chars.length; i-->1; ) if (chars[i] === chars[i-1]) chars.splice(i, 1);
+    for (var idx=chars.length; idx-->1; ) if (chars[idx] === chars[idx-1]) chars.splice(idx, 1);
 
-    process.stdout.write(res + '\n');
+    var res = get_lists(len, chars);
+
+    process.stdout.write(res.join(',') + '\n');
 });
 
-function get_lists(chars)
+function get_lists(len, chars)
 {
-	
+	if (len === 1) return chars.concat();
+
+	var
+		res = [],
+		char_len = chars.length,
+		suffixes = get_lists(len-1, chars),
+		suffix_len = suffixes.length;
+
+	for (var idx=0; idx<char_len; idx++) {
+		var current = chars[idx];
+		for (var jdx=0; jdx<suffix_len; jdx++) {
+			res.push(current + suffixes[jdx]);
+		}
+	}
+
+	return res;
 }
