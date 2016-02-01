@@ -1,11 +1,17 @@
 var fs  = require("fs");
+var memory = {};
+
 function myParseInt(n) {
 	return parseInt(n, 10);
 }
+
 fs.readFileSync(process.argv[2]).toString().split('\n').forEach(function (line)
 	{
 	if (line === "") return;
 	// console.log("input: " + line);
+
+	memory = {};
+
 	var
 		digits = line.split('').map(myParseInt),
 		sums = getSums(digits),
@@ -27,13 +33,17 @@ fs.readFileSync(process.argv[2]).toString().split('\n').forEach(function (line)
 
 function getSums(digits, startIdx) {
 	if (!startIdx) startIdx = 0;
-	// console.log(digits, ' - ', startIdx, digits.slice(startIdx));
+	
+	if (memory[startIdx]) return memory[startIdx];
+	
+	// console.log(digits.slice(startIdx));
+	
+	var len = digits.length;
+	
 	if (startIdx >= len) return [];
-
+	
 	var
-		len = digits.length,
-		n = digits[startIdx],
-		cumulated = n,
+		cumulated = digits[startIdx],
 		res = [];
 
 	for (var idx=startIdx+1; idx<len; idx++) {
@@ -45,5 +55,6 @@ function getSums(digits, startIdx) {
 		cumulated = cumulated*10 + digits[idx];
 	}
 	res.push(cumulated);
-	return res;
+	
+	return memory[startIdx] = res;
 }
