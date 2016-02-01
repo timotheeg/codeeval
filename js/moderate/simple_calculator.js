@@ -1,22 +1,83 @@
 var fs  = require("fs");
-function parseInt10(n){ return parseInt(n, 10); }
-
 fs.readFileSync(process.argv[2]).toString().split('\n').forEach(function (line)
 {
 	if (line === "") return;
-	var row_num = parseInt10(line);
+	process.stdout.write(processExpression(str, 0).toFixed(5) + '\n');
+});
 
-	var triangle = [[1]], prev_row = triangle[0];
+function processExpression(str, offsetIdx) {
+	var tokens = [];
+	var curToken = '';
+	var idx;
 
-	for (var row_idx=1; row_idx<row_num; row_idx++) {
-		var row = [];
-		triangle.push(row);
-		for (var i=0; i<=prev_row.length; i++) {
-			row[i] = (prev_row[i-1] || 0) + (prev_row[i] || 0);
+	function addToken() {
+		if (curToken) {
+			tokens.push(parseFloat(curToken));
+			curToken = '';
 		}
-
-		prev_row = row;
 	}
 
-	process.stdout.write(triangle.map(function(a){return a.join(' ')}).join(' ') + '\n');
-});
+	for (idx=offsetIdx; idx<str.length; idx++) {
+		var c = str.charCodeAt(idx);
+		switch(c) {
+			case '(': 
+				var sub = processExpression(str, idx+1);
+				tokens.push(sub[0]);
+				idx = sub[1] + 1;
+				break;
+			case ')':
+				addToken();
+				return [processTokens(tokens), idx];
+			case '+':
+			case '-':
+			case '*':
+			case '/':
+			case '^':
+				addToken();
+				tokens.push(c);
+				break;
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+			case '.':
+				curToken += c;
+				break;
+			case ' ':
+				addToken();
+				break;
+		}
+	}
+
+	return [processTokens(tokens), idx];
+}
+
+// process a flat expression no nesting!
+// returns value index
+// assumes valid expression!!
+function processTokens(tokens) {
+	var cur = 0;
+	for (var idx=0; idx<tokens.length; idx++) {
+		var token = tokens[idx];
+		if (typeof(token) === 'number') {
+
+		}
+		else {
+			switch(token) {
+				case '^':
+				case '*':
+				case '/':
+				case '+':
+				case '-':
+			}
+		}
+	}
+}
+
+function 

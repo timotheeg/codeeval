@@ -8,7 +8,7 @@ function to_ip_int(a, b, c, d) {
 	console.log(a, b, c, d);
 	if ( arguments.length === 4 )
 	{
-		if ( 
+		if (	
 			   a < 1 || a > 255
 			|| b < 0 || b > 255
 			|| c < 0 || c > 255
@@ -129,7 +129,7 @@ while(m = re.exec(snippet))
 			{
 				var ip = searches[i].f(m[0]);
 				console.log("match: " + ip);
-				var cnt = (ip in ips ? ips[ip]++ : ips[ip]=1);
+				var cnt = (ip in ips ? ++ips[ip] : ips[ip]=1);
 				if (cnt > max_cnt) {
 					max_cnt = cnt;
 					max_ip = ip;
@@ -145,8 +145,11 @@ console.log(ips);
 
 var res = [];
 for (var ip in ips) {
-	if (ips[ip] ===  max_ip) res.push(ip);
+	if (ips[ip] === max_cnt) res.push(ip);
 }
 
-process.stdout.write(res.sort().map(int_to_ip).join(' ') + '\n');
+console.log(max_cnt);
+console.log(res);
+
+process.stdout.write('result:' + res.sort().map(int_to_ip).join(' ') + '\n');
 
