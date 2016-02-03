@@ -16,74 +16,66 @@ require("fs")
 		var c = p(tokens[4]);
 		var r = p(tokens[5]);
 		
-		// create a Buffer to accomodate the size of the data, one bit per index
-		var num_int32 = Math.ceil(r / 32);
-		var buffer = new ArrayBuffer(num_int32 * 4);
-		var store = new DataView(buffer);
+		var m = new Array(k);
 		
-		// store the first k elements
-		do
+		m[0] = a;
+		
+		for (var idx=1; idx<k; idx++)
 		{
-			setBit(store, a);
-			a = (a * b + c) % r;
+			m[idx] = a = (a * b + c) % r;
 		}
-		while(--k)
-
+		
+		var val;
+		var buffer = new ArrayBuffer(Math.ceil(r/8));
+		var d = new Uint8Array(buffer);
+		
+		for (var idx=k; idx<n; idx++)
+		{
+			// brute force, compute clean every time
+			d.fill(0);
 			
-		// fill the rest of the array
-		var curInt32 = 0;
-		var curBitIdx = 0;
-		var toFind = n - k;
-		var res;
-
-		// iterate through all the non-1 element until the desired one is found
-		main:
-		while(curInt32 < store.byteLength)
-		{
-			var int32 = store.getUint32(curInt32);
-			console.log(curInt32, ':', int32);
-
-			for (curBitIdx=0; curBitIdx<32; curBitIdx++)
-			{
-				if (int32 & (1 << curBitIdx) === 0)
-				{
-					if (--toFind <= 0)
-					{
-						console.log('found!');
-						break main;
-					}
-				}
-			}
-
-			curInt32 += 4; // advance by 32 bits
+			for (var jdx=k; jdx--; ) setBit(d, m[jdx]);
+			
+			val = getFirstZeroIndex(d);
+			 
+			m.shift();
+			m.push(val);
 		}
 		
-		console.log('res', curInt32, curBitIdx, toFind);
-		
-		if (curInt32 >= store.byteLength) {
-			// we've exhausted all number lower than r
-			res = store.byteLength * 8 + toFind;
-		}
-		else {
-			res = curInt32 * 32 + curBitIdx + 1;
-		}
-		
-		process.stdout.write(res + '\n');
+		process.stdout.write(m.pop() + '\n');
 	});
 	
-function p(n) {
+function p(n)
+{
 	return parseInt(n, 10);
 }
 
-function setBit(store, index) {
-	var int32Idx = Math.floor(index / 32);
-	var bitIdx = index % 32;
+function setBit(store, index, val)
+{
+	var byteIdx = Math.floor(index / 8);
+	var bitIdx = index % 8;
 
-	console.log('setBit', index, int32Idx, bitIdx, store.byteLength);
+	var byte = store[byteIdx];
 
-	var int32 = store.getUint32(int32Idx * 4);
-
-	int32 |= (1 << bitIdx);
+	byte |= (1 << bitIdx);
 	
-	store.setUint32(int32Idx * 4, int32);
+	store[byteIdx] = byte;
+}
+
+function getFirstZeroIndex(store)
+{
+	for (var byteIdx=0; byteIdx<store.length; byteIdx++)
+	{
+		var byte = store[byteIdx];
+		
+		for (var bitIdx=0; bitIdx<8; bitIdx++)
+		{
+			if ((byte & (1 << bitIdx)) === 0)
+			{
+				return byteIdx * 8 + bitIdx;
+			}
+		}
+	}
+
+	throw new Error('No zero found');
 }
